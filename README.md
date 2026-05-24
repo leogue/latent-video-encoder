@@ -1,16 +1,21 @@
-# Latent Video Encoder
+# Latent World Model
 
-Self-supervised pretraining of a **video encoder** with a V-JEPA-style
-joint-embedding predictive objective — predicting masked spatio-temporal regions
-in *latent space*, with no pixel reconstruction and no decoder.
+A **latent world model for robotics**, built in three stages around a V-JEPA-style
+self-supervised video encoder — everything happens in latent space, with no pixel
+reconstruction and no decoder.
 
-The encoder produces dense spatio-temporal features intended to be the frozen
-backbone of a downstream **world model** for robotics (an action-conditioned
-predictor, à la V-JEPA 2-AC). **This repository trains the encoder only**; the
-action-conditioned stage is deliberately out of scope.
+| Stage | Package | What | Status |
+|-------|---------|------|--------|
+| 1 — **Encoder** | `lve` | Self-supervised video encoder (V-JEPA): predict masked spatio-temporal regions in latent space. Produces the frozen backbone. | ✅ working, validated on real robot video |
+| 2 — **World predictor** | `lwp` | Action-conditioned dynamics (V-JEPA 2-AC): from frozen latents + state + action, predict the next-step latent. L1 regression, teacher-forcing + rollout. | 🚧 in progress |
+| 3 — **Planning** | `planning` | CEM / MPC over the predictor to reach a goal latent. | 🚧 planned |
 
-> Status: working end-to-end (model · masking · losses · EMA · data · trainer ·
-> scripts · tests). Validated on CPU with synthetic data and on real robot video.
+The vision encoder and the dynamics are deliberately **modular**: a single frozen
+encoder (Stage 1) is reused across many world-model / robot experiments. The clean
+interface between stages is the exported encoder (`encoder.pt`).
+
+The rest of this README documents **Stage 1 (the encoder)**, which is complete.
+Stages 2–3 are under active development (`src/lwp`, `src/planning`).
 
 ---
 
@@ -221,10 +226,13 @@ raise `batch_size`.
 
 ## Scope & limitations
 
-- **Encoder only.** No action conditioning, dynamics/rollout predictor, or
-  decoder — those belong to the later world-model stage.
-- **Causal/future masking is intentionally absent** here; full-temporal-extent
-  masking is the correct encoder-stage recipe (V-JEPA 2).
+- **The encoder (Stage 1) has no action conditioning, dynamics predictor, or
+  decoder by design** — action-conditioned dynamics live in Stage 2 (`lwp`),
+  which consumes the *frozen* encoder. Keeping vision and dynamics modular is
+  intentional.
+- **Causal/future masking is intentionally absent in the encoder**; full-temporal-extent
+  masking is the correct encoder-stage recipe (V-JEPA 2). Block-causal,
+  action-conditioned prediction belongs to Stage 2.
 - Representation quality requires real, diverse data and a downstream probe;
   small same-scene datasets adapt to one environment but won't yield a generalist
   encoder.
