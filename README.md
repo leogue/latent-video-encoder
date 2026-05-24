@@ -166,12 +166,26 @@ Diving-48). This is the only reliable measure of representation quality.
 | Backend | Input | Use |
 |---------|-------|-----|
 | `synthetic` | none (generated) | dev / CI smoke test |
-| `frames` | `data/frames/<video>/frame_*.jpg` (via `preprocess_videos.py`) | **recommended** for real video |
+| `frames` | `data/frames/<video>/frame_*.jpg` (via `preprocess_videos.py`) | **recommended** for loose video files |
+| `lerobot` | a [LeRobotDataset](https://huggingface.co/docs/lerobot/lerobot-dataset-v3) v2.1 / v3.0 | **robot data** (the field standard) |
 | `torchvision` | folder of video files | legacy; broken on torchvision ≥ 0.27 (no video decoder) |
 
-For robot data, the [LeRobotDataset](https://huggingface.co/docs/lerobot/lerobot-dataset-v3)
-v3 format is the field standard; an adapter that extracts a camera stream into
-clips is a natural extension (not yet implemented).
+### LeRobot
+
+The `lerobot` backend samples temporal clips from one camera stream
+(`observation.images.<cam>`) of a real LeRobotDataset, using `delta_timestamps`.
+Actions and low-dim state are ignored — the encoder trains on pixels only;
+actions belong to the later action-conditioned stage.
+
+```bash
+uv add lerobot        # optional heavy dependency
+uv run python scripts/train.py --config configs/lerobot.yaml
+```
+
+Set `data.repo_id` (Hub id or local dataset), optionally `data.root` (local path)
+and `data.camera_key` (defaults to the first camera). This expects a real
+LeRobotDataset (`meta/` + Parquet + MP4 shards), *not* loose video files — for
+those use the `frames` backend.
 
 ---
 

@@ -15,13 +15,15 @@ from .models import LatentPredictor, VideoJEPAModel, VideoTransformerEncoder
 @dataclass
 class DataConfig:
     root: str = "./data/videos"
-    backend: str = "synthetic"  # synthetic | frames | torchvision
+    backend: str = "synthetic"  # synthetic | frames | lerobot | torchvision
     clip_frames: int = 16
     frame_stride: int = 2
     image_size: int = 128
     batch_size: int = 2
     num_workers: int = 0
     samples_per_epoch: int = 1000  # used by the "frames" backend
+    repo_id: str = ""  # LeRobot dataset id (lerobot backend)
+    camera_key: str = ""  # LeRobot camera stream; "" = first available
 
 
 @dataclass
