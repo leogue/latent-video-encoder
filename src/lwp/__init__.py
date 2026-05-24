@@ -5,15 +5,29 @@ proprioceptive state and actions, and predicts the next-step latent. Trained by
 L1 regression in latent space (teacher-forcing + multi-step rollout), with no
 collapse machinery — the targets come from a fixed encoder, so this is plain
 supervised regression of dynamics.
-
-Planned modules:
-- ``dataset.py``   — trajectory sampling (obs + state + action) from LeRobot.
-- ``predictor.py`` — block-causal transformer with separate input heads for
-  visual / state / action tokens.
-- ``losses.py``    — teacher-forcing + rollout L1.
-- ``trainer.py``   — training loop over a frozen encoder.
 """
 
 from __future__ import annotations
 
-__all__: list[str] = []
+from .config import WorldModelConfig, build_world_model, load_config
+from .dataset import (
+    LeRobotTrajectoryDataset,
+    SyntheticTrajectoryDataset,
+    build_trajectory_dataset,
+)
+from .losses import latent_l1
+from .model import LatentWorldModel, WorldModelOutput
+from .predictor import ActionConditionedPredictor
+
+__all__ = [
+    "WorldModelConfig",
+    "build_world_model",
+    "load_config",
+    "LeRobotTrajectoryDataset",
+    "SyntheticTrajectoryDataset",
+    "build_trajectory_dataset",
+    "latent_l1",
+    "LatentWorldModel",
+    "WorldModelOutput",
+    "ActionConditionedPredictor",
+]
