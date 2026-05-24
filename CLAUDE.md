@@ -4,17 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-Implemented. The package lives under `src/lve/` and the full V-JEPA encoder
-pretraining pipeline runs end-to-end (model, masking, losses, EMA, data,
-trainer, scripts, tests). `README.md` is the GitHub-facing presentation;
-**[`docs/DESIGN.md`](docs/DESIGN.md) is the detailed design spec / source of
-truth** for architecture rationale, defaults, and SOTA references; the code
-follows it. When changing behavior, keep code and spec in sync.
+This is **`latent-world-model`**, a 3-stage latent world model for robotics
+(monorepo with sub-packages under `src/`):
 
-Package layout: `models/` (patch_embed, pos_embed, transformer, encoder,
+- **`lve`** — Stage 1, the V-JEPA video encoder. **Complete & validated**:
+  full pretraining pipeline (model, masking, losses, EMA, data, trainer, scripts,
+  tests) runs end-to-end. This is the frozen backbone.
+- **`lwp`** — Stage 2, the action-conditioned world predictor (V-JEPA 2-AC):
+  frozen latents + state + action → next-step latent; L1 regression
+  (teacher-forcing + rollout). **In progress.**
+- **`planning`** — Stage 3, CEM / MPC planning over the predictor. **Planned.**
+
+`lwp` and `planning` reuse `lve` primitives (transformer `Block`,
+`RotaryEmbedding3D`, the LeRobot data loader, config system) by direct import —
+that internal reuse is the reason for the monorepo. The clean inter-stage
+interface is the exported frozen encoder (`encoder.pt`).
+
+`README.md` is the GitHub-facing presentation; **[`docs/DESIGN.md`](docs/DESIGN.md)
+is the detailed design spec / source of truth** for Stage 1 rationale, defaults,
+and SOTA references. When changing behavior, keep code and spec in sync.
+
+`lve` layout: `models/` (patch_embed, pos_embed, transformer, encoder,
 predictor, jepa), `masking.py`, `losses.py`, `ema.py`, `optim.py`, `config.py`
 (dataclasses + YAML loader + factories), `trainer.py`, `data/` (synthetic +
-torchvision folder dataset + clip-consistent transforms), `probe.py`. Scripts in
+frames + lerobot datasets + clip-consistent transforms), `probe.py`. Scripts in
 `scripts/`, configs in `configs/`, tests in `tests/`.
 
 ## Tooling
@@ -29,9 +42,6 @@ The project uses [uv](https://docs.astral.sh/uv/) (`.python-version` = 3.10,
 - `uv run python scripts/train.py --config configs/tiny.yaml --resume runs/tiny/checkpoints/latest.pt` — resume.
 - `uv run python scripts/export_encoder.py --checkpoint <ckpt> --out encoder.pt` — export the frozen EMA encoder (the deliverable).
 - `uv run python scripts/eval_probe.py --encoder encoder.pt --num-classes N` — attentive probe (needs a labeled dataset wired into `build_labeled_dataset`).
-
-Note: the env has no `numpy`; torch prints a harmless "Failed to initialize
-NumPy" warning. Don't add numpy just to silence it.
 
 ### Gotcha: do not name a method `apply` on an `nn.Module`
 
