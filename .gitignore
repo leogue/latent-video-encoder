@@ -9,9 +9,9 @@ wheels/
 # Virtual environments
 .venv
 
-# Training artifacts and data
-runs/
-data/
+# Training artifacts and data (anchored to repo root so src/lve/data/ is NOT ignored)
+/runs/
+/data/
 *.pt
 
 # IDE
