@@ -7,7 +7,7 @@ reconstruction and no decoder.
 | Stage | Package | What | Status |
 |-------|---------|------|--------|
 | 1 — **Encoder** | `lve` | Self-supervised video encoder (V-JEPA): predict masked spatio-temporal regions in latent space. Produces the frozen backbone. | ✅ working, validated on real robot video |
-| 2 — **World predictor** | `lwp` | Action-conditioned dynamics (V-JEPA 2-AC): from frozen latents + state + action, predict the next-step latent. L1 regression, teacher-forcing + rollout. | 🚧 in progress |
+| 2 — **World predictor** | `lwp` | Action-conditioned dynamics (V-JEPA 2-AC): from frozen latents + state + action, predict the next-step latent. L1 regression, teacher-forcing + rollout. Block-causal transformer with separate visual/state/action input heads. | 🟡 core implemented & tested; real-data validation pending |
 | 3 — **Planning** | `planning` | CEM / MPC over the predictor to reach a goal latent. | 🚧 planned |
 
 The vision encoder and the dynamics are deliberately **modular**: a single frozen
